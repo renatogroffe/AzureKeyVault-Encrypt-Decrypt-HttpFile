@@ -1,0 +1,51 @@
+# Documentacao:
+# https://learn.microsoft.com/en-us/rest/api/keyvault/keys/decrypt/decrypt?tabs=HTTP
+# https://learn.microsoft.com/en-us/rest/api/keyvault/keys/encrypt/encrypt?tabs=HTTP
+# Associada a role "Key Vault Crypto User" para a App Registration
+
+@tenant_id=00000000-0000-0000-0000-000000000000
+@client_id=00000000-0000-0000-0000-000000000000
+@client_secret=SECRET_APP_REGISTRATION
+@resource=https://vault.azure.net
+@url_Key=URL_CRYPTOGRAPHY_KEY_AZURE_KEY_VAULT
+
+# @name autenticar
+POST https://login.microsoft.com/{{tenant_id}}/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials
+&client_id={{client_id}}
+&client_secret={{client_secret}}
+&resource={{resource}}
+
+###
+
+@token = {{autenticar.response.body.$.access_token}}
+
+###
+
+# @name encriptar
+POST {{url_Key}}/encrypt?api-version=7.4
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "alg": "RSA-OAEP",
+  "value": "Q2FuYWxEb3ROZXQ="
+}
+
+###
+
+@valorEncriptado={{encriptar.response.body.$.value}}
+
+###
+
+# @name decriptar
+POST {{url_Key}}/decrypt?api-version=7.4
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "alg": "RSA-OAEP",
+  "value": "{{valorEncriptado}}"
+}
